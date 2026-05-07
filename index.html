@@ -4,138 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Duta Terang LED</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00bcd4">
-
     <style>
-        :root { 
-            --primary: #00bcd4; 
-            --pink: #e91e63; 
-            --wa: #25D366; 
-            --danger: #ff4d4d;
-        }
+        :root { --primary: #00bcd4; --pink: #e91e63; --wa: #25D366; --danger: #ff4d4d; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f6f8; padding-bottom: 240px; }
+        header { background: var(--primary); color: #fff; padding: 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f6f8; padding-bottom: 220px; }
-        header { background: var(--primary); color: #fff; text-align: center; padding: 12px; font-size: 16px; font-weight: bold; position: relative; }
-
-        /* BADGE NOTIFIKASI */
-        .badge-notif { position: absolute; top: 10px; right: 15px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; border: 2px solid white; font-weight: bold; cursor: pointer; }
-
-        .promo-running { background: #fff3cd; color: #856404; font-size: 13px; padding: 5px 0; font-weight: bold; border-bottom: 1px solid #ffeeba; }
+        /* BADGE DISKON & HABIS */
+        .badge-disc { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; z-index: 1; }
+        .badge-habis { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border-radius: 10px; z-index: 2; }
 
         /* KATEGORI */
-        .category { display: flex; gap: 8px; padding: 10px; background: #fff; position: sticky; top: 0; z-index: 100; overflow-x: auto; border-bottom: 1px solid #eee; }
-        .category button { border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; background: #fff; color: #555; font-size: 12px; white-space: nowrap; cursor: pointer; }
-        .category button.active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
+        .category { display: flex; gap: 8px; padding: 10px; background: #fff; overflow-x: auto; border-bottom: 1px solid #eee; }
+        .category button { border: 1px solid #ddd; padding: 5px 12px; border-radius: 15px; background: #fff; font-size: 11px; white-space: nowrap; }
+        .category button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
         /* PRODUK */
-        .container { padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 600px; margin: auto; }
-        .card { background: #fff; border-radius: 10px; padding: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
-        .card img { width: 100%; height: 110px; object-fit: contain; background: #f9f9f9; border-radius: 8px; cursor: zoom-in; }
-        .price-new { color: var(--pink); font-weight: bold; font-size: 14px; }
+        .container { padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .card { background: #fff; border-radius: 10px; padding: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 100px; object-fit: contain; border-radius: 8px; }
         
-        .qty { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; border-radius: 6px; padding: 2px; margin-top: 8px; }
-        .qty button { width: 30px; height: 30px; border: none; background: var(--primary); color: #fff; border-radius: 4px; font-size: 18px; cursor: pointer; }
+        .qty { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; border-radius: 6px; margin-top: 8px; }
+        .qty button { width: 28px; height: 28px; border: none; background: var(--primary); color: #fff; border-radius: 4px; }
 
-        /* AREA RINGKASAN & FORM PEMESAN */
-        #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 15px; border-radius: 15px 15px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.15); z-index: 1000; max-height: 80vh; overflow-y: auto; }
+        /* FORM & KERANJANG RINGKAS */
+        #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 10px; border-radius: 15px 15px 0 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); z-index: 1001; }
+        .form-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+        .form-mini input, .form-mini select { padding: 6px; border: 1px solid #ddd; border-radius: 5px; font-size: 11px; outline: none; }
+        .full-width { grid-column: span 2; }
+
+        .cart-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px; }
+        #btn-wa { background: var(--wa); color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        
         .hide { display: none; }
-        
-        .form-order { margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 10px; }
-        .form-order input, .form-order select, .form-order textarea { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-        #btn-wa { background: var(--wa); color: #fff; text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <header>
-    DUTA TERANG LED
-    <div class="badge-notif" onclick="alert('Promo Minggu Ini: Stok sparepart LED terbaru sudah mendarat!')">1</div>
+    <div style="font-size: 14px; font-weight: bold;">DUTA TERANG LED</div>
+    <div style="font-size: 10px; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 10px;">
+        📲 <span id="user-count">1.2k</span> Terpasang
+    </div>
 </header>
 
-<div class="promo-running">
-    <marquee behavior="scroll" direction="left" scrollamount="5">
-        📢 PROMO MINGGU INI: Kirim seluruh Indonesia | Bisa Bayar COD | Sparepart Lengkap.
-    </marquee>
-</div>
+<div class="category" id="cat-bar"></div>
 
-<div class="category" id="cat-bar">
-    <button class="active">Semua</button>
-</div>
+<div class="container" id="list">Memuat...</div>
 
-<div class="container" id="list">Memuat produk...</div>
-
-<!-- KERANJANG GABUNG FORM -->
 <div id="cart" class="hide">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <b style="font-size:14px;">Ringkasan Pesanan:</b>
-        <button onclick="resetCart()" style="border:none; color:var(--danger); background:none; font-size:12px; cursor:pointer;">🗑️ Hapus Semua</button>
-    </div>
-    
-    <div id="cart-list" style="font-size:12px; color:#444; margin:10px 0;"></div>
-    
-    <div style="font-size:16px; font-weight:900; color:var(--primary); text-align:right; margin-bottom:10px;" id="total">Rp 0</div>
-
-    <div class="form-order">
-        <input type="text" id="nama" placeholder="Nama Pemesan">
-        <textarea id="alamat" placeholder="Alamat Lengkap (Jl, No Rumah, Patokan)"></textarea>
-        <div class="form-row">
-            <input type="text" id="rt_rw" placeholder="RT/RW">
-            <input type="text" id="desa" placeholder="Desa">
-        </div>
-        <div class="form-row">
-            <input type="text" id="kec" placeholder="Kecamatan">
-            <input type="text" id="kab" placeholder="Kabupaten/Kota">
-        </div>
-        <input type="text" id="prov" placeholder="Provinsi">
-        <select id="metode">
-            <option value="COD (Bayar di Tempat)">Bayar di Tempat (COD)</option>
-            <option value="Transfer Bank/Wallet">Transfer Bank / E-Wallet</option>
+    <!-- FORM ALAMAT SANGAT RINGKAS -->
+    <div class="form-mini">
+        <input type="text" id="f_nama" class="full-width" placeholder="Nama Pemesan">
+        <input type="text" id="f_almt" class="full-width" placeholder="Alamat (Jl / No / Patokan)">
+        <input type="text" id="f_rtrw" placeholder="RT/RW">
+        <input type="text" id="f_desa" placeholder="Desa">
+        <input type="text" id="f_kec" placeholder="Kecamatan">
+        <input type="text" id="f_kab" placeholder="Kab/Kota">
+        <input type="text" id="f_prov" placeholder="Provinsi">
+        <select id="f_bayar">
+            <option value="COD">Bayar COD</option>
+            <option value="Transfer">Transfer</option>
         </select>
     </div>
 
-    <a id="btn-wa" href="javascript:void(0)" onclick="kirimWA()">PESAN VIA WHATSAPP</a>
+    <div class="cart-bottom">
+        <button onclick="resetCart()" style="background:var(--danger); border:none; padding:8px; border-radius:5px; color:#fff; cursor:pointer;">🗑️</button>
+        
+        <div style="text-align: right; flex-grow: 1; margin-right: 15px;">
+            <div id="cart-summary" style="font-size: 10px; color: #666; max-height: 30px; overflow: hidden;"></div>
+            <div id="total" style="font-size: 16px; font-weight: 900; color: var(--pink);">Rp 0</div>
+        </div>
+
+        <a id="btn-wa" href="javascript:void(0)" onclick="kirimWA()">ORDER WA</a>
+    </div>
 </div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyhgdk0elMuqM4-00OIR8zbUqp-k80RnbuYyPDDqGHsEk7aSCg60kgT5HTYL_hIVSDc/exec";
     const WA_NUMBER = "6288224166270";
-    
-    let produk = [];
-    let order = {};
+    let produk = [], order = {};
 
     async function load() {
         try {
             const res = await fetch(API_URL);
             produk = await res.json();
             render();
-        } catch (e) {
-            document.getElementById("list").innerText = "Gagal memuat. Periksa internet.";
-        }
+        } catch (e) { document.getElementById("list").innerText = "Gagal memuat."; }
     }
 
     function render() {
-        let html = "";
-        let kategori = new Set();
+        let html = "", kategori = new Set();
         produk.forEach(p => {
             if (!p.nama) return;
-            const kat = p.kategori || "Lainnya";
-            kategori.add(kat);
-            const hrgFix = p.harga - (p.harga * (p.diskon || 0) / 100);
-            
+            kategori.add(p.kategori || "Lainnya");
+            const disc = Number(p.diskon) || 0;
+            const hrgFix = p.harga - (p.harga * disc / 100);
+            const isHabis = p.stok <= 0;
+
             html += `
-            <div class="card" data-cat="${kat.toLowerCase()}">
+            <div class="card" data-cat="${(p.kategori || 'Lainnya').toLowerCase()}">
+                ${isHabis ? '<div class="badge-habis">HABIS</div>' : ''}
+                ${disc > 0 ? `<div class="badge-disc">-${disc}%</div>` : ''}
                 <img src="${p.gambar || 'https://via.placeholder.com/150'}">
-                <div style="margin-top:6px; flex-grow:1;">
-                    <b style="font-size:12px; display:block; height:32px; overflow:hidden;">${p.nama}</b>
-                    <span class="price-new">Rp ${hrgFix.toLocaleString('id-ID')}</span>
-                    <div class="qty">
-                        <button onclick="changeQty('${p.id}', -1, ${hrgFix}, '${p.nama}')">−</button>
-                        <span id="qty-${p.id}">0</span>
-                        <button onclick="changeQty('${p.id}', 1, ${hrgFix}, '${p.nama}')">+</button>
-                    </div>
+                <b style="font-size:11px; margin-top:5px; height:28px; overflow:hidden;">${p.nama}</b>
+                <span style="color:var(--pink); font-weight:bold; font-size:13px;">Rp ${hrgFix.toLocaleString('id-ID')}</span>
+                <div class="qty">
+                    <button onclick="changeQty('${p.id}', -1, ${hrgFix}, '${p.nama}')" ${isHabis?'disabled':''}>-</button>
+                    <span id="qty-${p.id}" style="font-size:12px;">0</span>
+                    <button onclick="changeQty('${p.id}', 1, ${hrgFix}, '${p.nama}')" ${isHabis?'disabled':''}>+</button>
                 </div>
             </div>`;
         });
@@ -150,59 +126,45 @@
         if (!order[id]) order[id] = { qty: 0, name, price };
         order[id].qty += delta;
         if (order[id].qty <= 0) delete order[id];
-        
-        const qtyEl = document.getElementById(`qty-${id}`);
-        if (qtyEl) qtyEl.innerText = order[id] ? order[id].qty : 0;
+        const el = document.getElementById(`qty-${id}`);
+        if (el) el.innerText = order[id] ? order[id].qty : 0;
         updateCart();
     }
 
     function updateCart() {
-        let total = 0;
-        let listHtml = "";
+        let total = 0, summary = "";
         for (let id in order) {
             total += (order[id].qty * order[id].price);
-            listHtml += `<div>✅ ${order[id].name} (x${order[id].qty})</div>`;
+            summary += `${order[id].name} (x${order[id].qty}), `;
         }
         document.getElementById("total").innerText = "Rp " + total.toLocaleString('id-ID');
-        document.getElementById("cart-list").innerHTML = listHtml;
+        document.getElementById("cart-summary").innerText = summary.slice(0, -2);
         document.getElementById("cart").classList.toggle("hide", total === 0);
     }
 
     function kirimWA() {
-        const inputNama = document.getElementById("nama").value;
-        const inputAlamat = document.getElementById("alamat").value;
-        if (!inputNama || !inputAlamat) return alert("Mohon isi Nama dan Alamat!");
+        const n = document.getElementById("f_nama").value;
+        const a = document.getElementById("f_almt").value;
+        if(!n || !a) return alert("Nama & Alamat wajib diisi!");
 
-        let pesan = `Halo Duta Terang, saya mau pesan:\n\n`;
-        for (let id in order) {
-            pesan += `▪️ ${order[id].name} (x${order[id].qty})\n`;
-        }
-        pesan += `\n*Total: ${document.getElementById("total").innerText}*\n\n`;
-        pesan += `*Data Pengiriman:*\n`;
-        pesan += `👤 Nama: ${inputNama}\n`;
-        pesan += `📍 Alamat: ${inputAlamat}\n`;
-        pesan += `🏠 RT/RW: ${document.getElementById("rt_rw").value}, Desa: ${document.getElementById("desa").value}\n`;
-        pesan += `🏘️ Kec: ${document.getElementById("kec").value}, Kab: ${document.getElementById("kab").value}\n`;
-        pesan += `🗺️ Prov: ${document.getElementById("prov").value}\n`;
-        pesan += `💳 Pembayaran: ${document.getElementById("metode").value}\n`;
+        let m = `*PESANAN DUTA TERANG*\n\n`;
+        for(let id in order) m += `• ${order[id].name} (x${order[id].qty})\n`;
+        m += `\n*Total: ${document.getElementById("total").innerText}*\n\n`;
+        m += `👤 *Penerima:* ${n}\n📍 *Alamat:* ${a}\n🏠 *RT/RW:* ${document.getElementById("f_rtrw").value}, *Desa:* ${document.getElementById("f_desa").value}\n🏘️ *Kec:* ${document.getElementById("f_kec").value}, *Kab:* ${document.getElementById("f_kab").value}\n💳 *Bayar:* ${document.getElementById("f_bayar").value}`;
 
-        window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(pesan)}`);
+        window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(m)}`);
     }
 
     function filter(cat, btn) {
-        document.querySelectorAll(".card").forEach(c => {
-            c.style.display = (cat === 'all' || c.dataset.cat === cat) ? 'flex' : 'none';
-        });
+        document.querySelectorAll(".card").forEach(c => c.style.display = (cat==='all' || c.dataset.cat===cat)?'flex':'none');
         document.querySelectorAll(".category button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
     }
 
     function resetCart() {
-        if(confirm("Kosongkan keranjang?")) {
-            order = {};
-            document.querySelectorAll("[id^='qty-']").forEach(e => e.innerText = "0");
-            updateCart();
-        }
+        order = {};
+        document.querySelectorAll("[id^='qty-']").forEach(e => e.innerText = "0");
+        updateCart();
     }
 
     load();
