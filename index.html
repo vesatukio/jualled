@@ -6,93 +6,89 @@
     <title>Duta Terang LED</title>
     <style>
         :root { --primary: #00bcd4; --pink: #e91e63; --wa: #25D366; --danger: #ff4d4d; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f6f8; padding-bottom: 250px; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f6f8; padding-bottom: 280px; }
         
-        /* HEADER */
+        /* HEADER & MARQUEE */
         header { background: var(--primary); color: #fff; padding: 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .promo-running { background: #fff3cd; color: #856404; font-size: 12px; padding: 5px 0; font-weight: bold; border-bottom: 1px solid #ffeeba; }
         .user-stat { font-size: 10px; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 20px; }
 
-        /* KATEGORI */
-        .category { display: flex; gap: 8px; padding: 10px; background: #fff; overflow-x: auto; border-bottom: 1px solid #eee; }
-        .category button { border: 1px solid #ddd; padding: 6px 12px; border-radius: 20px; background: #fff; font-size: 11px; white-space: nowrap; cursor: pointer; }
-        .category button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        /* POPUP & BADGE INSTALL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 30000; align-items: center; justify-content: center; }
+        .promo-box { background: #fff; width: 80%; max-width: 300px; padding: 20px; border-radius: 15px; text-align: center; }
+        #installFloat { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--pink); color: white; border: none; padding: 10px 5px; border-radius: 8px 0 0 8px; font-size: 10px; font-weight: bold; z-index: 9999; writing-mode: vertical-rl; cursor: pointer; }
 
         /* GRID PRODUK */
         .container { padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .card { background: #fff; border-radius: 10px; padding: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; display: flex; flex-direction: column; }
         .card img { width: 100%; height: 110px; object-fit: contain; border-radius: 8px; cursor: zoom-in; background: #f9f9f9; }
-        
-        /* BADGE */
-        .badge-disc { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .badge-disc { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; z-index: 10; }
         .badge-habis { position: absolute; inset: 0; background: rgba(255,255,255,0.7); color: red; display: flex; align-items: center; justify-content: center; font-weight: 900; border-radius: 10px; z-index: 5; }
 
-        .qty { display: flex; justify-content: space-between; align-items: center; background: #f1f3f4; border-radius: 6px; margin-top: 8px; }
-        .qty button { width: 30px; height: 30px; border: none; background: var(--primary); color: #fff; border-radius: 4px; font-weight: bold; }
-
-        /* ZOOM MODAL */
-        #zoomModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
-        #zoomModal img { max-width: 90%; max-height: 80%; border-radius: 10px; }
-
-        /* KERANJANG BARU (LAYOUT SPLIT) */
+        /* KERANJANG RAPI */
         #cart { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px; border-top: 2px solid var(--primary); box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; gap: 12px; z-index: 2000; }
-        .hide { display: none !important; }
-
-        /* Sisi Kiri: Form Alamat */
-        .cart-left { flex: 1.5; display: flex; flex-direction: column; gap: 5px; }
+        .cart-left { flex: 1.4; display: flex; flex-direction: column; gap: 4px; }
         .cart-left input, .cart-left select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; box-sizing: border-box; }
-        .grid-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        /* Sisi Kanan: Ringkasan & Tombol WA */
-        .cart-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; border-left: 1px dashed #ddd; padding-left: 10px; }
-        #total { font-size: 15px; font-weight: 900; color: var(--pink); margin-bottom: 5px; }
-        #cart-list-text { font-size: 9px; color: #777; text-align: right; max-height: 40px; overflow-y: auto; margin-bottom: 8px; }
+        .cart-right { flex: 1; display: flex; flex-direction: column; border-left: 1px dashed #ddd; padding-left: 10px; }
+        #total { font-size: 16px; font-weight: 900; color: var(--pink); text-align: right; }
+        #cart-list-render { font-family: monospace; font-size: 10px; color: #444; white-space: pre; overflow-y: auto; max-height: 85px; margin: 5px 0; }
         
-        #btn-wa { background: var(--wa); color: #fff; text-decoration: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; }
-        .btn-reset { background: var(--danger); border: none; color: #fff; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 10px; width: fit-content; }
+        #btn-wa { background: var(--wa); color: #fff; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; margin-top: auto; border: none; cursor: pointer; }
+        .hide { display: none !important; }
+        #zoomModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 40000; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
 <header>
     <div>DUTA TERANG LED</div>
-    <div class="user-stat">📲 <span id="install-info">1.284</span> terpasang</div>
+    <div class="user-stat">📲 <span id="user-count">1.284</span> terpasang</div>
 </header>
 
-<div id="cat-bar" class="category"></div>
-
-<div id="list" class="container">Memuat...</div>
-
-<!-- MODAL ZOOM -->
-<div id="zoomModal" onclick="this.style.display='none'">
-    <img id="imgZoom" src="">
+<div class="promo-running">
+    <marquee behavior="scroll" direction="left" scrollamount="5">
+        📢 PROMO MINGGU INI: Kirim seluruh Indonesia | Stok sparepart LED terbaru tersedia | Bisa Bayar COD (Bayar di Tempat).
+    </marquee>
 </div>
+
+<div id="promoModal" class="modal">
+    <div class="promo-box">
+        <h3 style="margin-top:0; color:var(--primary);">Duta Terang LED</h3>
+        <p style="font-size:13px;">Belanja sparepart LED jadi lebih mudah. Jangan lupa simpan nomor WA kami untuk update stok!</p>
+        <button onclick="closePromo()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; width:100%;">MULAI BELANJA</button>
+    </div>
+</div>
+
+<button id="installFloat" onclick="alert('Tekan Titik 3 > Instal Aplikasi')">📲 INSTALL APP</button>
+
+<div id="cat-bar" style="display:flex; gap:8px; padding:10px; background:#fff; overflow-x:auto; border-bottom:1px solid #eee;"></div>
+
+<div id="list" class="container">Memuat produk...</div>
+
+<div id="zoomModal" onclick="this.style.display='none'"><img id="imgZoom" src="" style="max-width:90%; max-height:80%;"></div>
 
 <!-- PANEL KERANJANG -->
 <div id="cart" class="hide">
-    <!-- KIRI: FORM ALAMAT -->
     <div class="cart-left">
-        <button class="btn-reset" onclick="resetCart()">🗑️ Hapus Semua</button>
-        <input type="text" id="f_nama" placeholder="Nama Pemesan">
+        <button onclick="resetCart()" style="background:var(--danger); border:none; color:white; padding:4px; border-radius:4px; font-size:10px; width:fit-content; margin-bottom:4px;">🗑️ Reset</button>
+        <input type="text" id="f_nama" placeholder="Nama Anda">
+        <input type="number" id="f_wa" placeholder="Nomor WA (Contoh: 0812...)">
         <input type="text" id="f_alamat" placeholder="Alamat (Jl / No / Patokan)">
-        <div class="grid-mini">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
             <input type="text" id="f_rtrw" placeholder="RT/RW">
             <input type="text" id="f_desa" placeholder="Desa">
-            <input type="text" id="f_kec" placeholder="Kecamatan">
-            <input type="text" id="f_kab" placeholder="Kab/Kota">
         </div>
         <select id="f_bayar">
-            <option value="COD">Metode: COD</option>
-            <option value="Transfer">Metode: Transfer</option>
+            <option value="COD">Bayar di Tempat (COD)</option>
+            <option value="Transfer">Transfer Bank</option>
         </select>
     </div>
 
-    <!-- KANAN: RINGKASAN & ORDER -->
     <div class="cart-right">
-        <div style="width: 100%; text-align: right;">
-            <div id="cart-list-text"></div>
-            <div id="total">Rp 0</div>
-        </div>
-        <a id="btn-wa" href="javascript:void(0)" onclick="kirimWA()">PESAN WA</a>
+        <div id="total">Rp 0</div>
+        <div id="cart-list-render"></div>
+        <button id="btn-wa" onclick="prosesPemesanan()">ORDER WA</button>
     </div>
 </div>
 
@@ -100,6 +96,16 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbyhgdk0elMuqM4-00OIR8zbUqp-k80RnbuYyPDDqGHsEk7aSCg60kgT5HTYL_hIVSDc/exec";
     const WA_NUMBER = "6288224166270";
     let produk = [], order = {};
+
+    window.onload = () => {
+        if(!localStorage.getItem('promo_seen')) document.getElementById('promoModal').style.display = 'flex';
+        load();
+    };
+
+    function closePromo() {
+        document.getElementById('promoModal').style.display = 'none';
+        localStorage.setItem('promo_seen', 'true');
+    }
 
     async function load() {
         try {
@@ -120,97 +126,86 @@
             const isHabis = p.stok <= 0;
 
             html += `
-            <div class="card" data-cat="${(p.kategori || 'Lainnya').toLowerCase()}">
+            <div class="card">
                 ${isHabis ? '<div class="badge-habis">HABIS</div>' : ''}
                 ${disc > 0 ? `<div class="badge-disc">-${disc}%</div>` : ''}
                 <img src="${p.gambar || 'https://via.placeholder.com/150'}" onclick="openZoom('${p.gambar}')">
-                <b style="font-size:11px; margin-top:5px; height:28px; overflow:hidden; line-height:1.2;">${p.nama}</b>
-                <span style="color:var(--pink); font-weight:bold; font-size:13px; margin-top:2px;">Rp ${hrgFix.toLocaleString('id-ID')}</span>
+                <b style="font-size:11px; margin-top:5px; height:28px; overflow:hidden;">${p.nama}</b>
+                <span style="color:var(--pink); font-weight:bold; font-size:13px;">Rp ${hrgFix.toLocaleString('id-ID')}</span>
                 <div class="qty">
                     <button onclick="changeQty('${p.id}', -1, ${hrgFix}, '${p.nama}')" ${isHabis?'disabled':''}>-</button>
-                    <span id="qty-${p.id}" style="font-size:12px; font-weight:bold;">0</span>
+                    <span id="qty-${p.id}">0</span>
                     <button onclick="changeQty('${p.id}', 1, ${hrgFix}, '${p.nama}')" ${isHabis?'disabled':''}>+</button>
                 </div>
             </div>`;
         });
         document.getElementById("list").innerHTML = html;
         
-        let catHtml = '<button class="active" onclick="filter(\'all\', this)">Semua</button>';
-        kategori.forEach(k => catHtml += `<button onclick="filter('${k.toLowerCase()}', this)">${k}</button>`);
+        let catHtml = '<button onclick="filter(\'all\', this)" style="border:1px solid #ddd; padding:6px 12px; border-radius:20px; background:#00bcd4; color:#fff; font-size:11px; white-space:nowrap;">Semua</button>';
+        kategori.forEach(k => catHtml += `<button onclick="filter('${k.toLowerCase()}', this)" style="border:1px solid #ddd; padding:6px 12px; border-radius:20px; background:#fff; font-size:11px; white-space:nowrap; margin-left:5px;">${k}</button>`);
         document.getElementById("cat-bar").innerHTML = catHtml;
-    }
-
-    function openZoom(url) {
-        if(!url) return;
-        document.getElementById("imgZoom").src = url;
-        document.getElementById("zoomModal").style.display = 'flex';
     }
 
     function changeQty(id, delta, price, name) {
         if (!order[id]) order[id] = { qty: 0, name, price };
         order[id].qty += delta;
         if (order[id].qty <= 0) delete order[id];
-        const el = document.getElementById(`qty-${id}`);
-        if (el) el.innerText = order[id] ? order[id].qty : 0;
+        document.getElementById(`qty-${id}`).innerText = order[id] ? order[id].qty : 0;
         updateCart();
     }
 
     function updateCart() {
-        let total = 0, summary = "";
+        let total = 0, renderText = "";
         for (let id in order) {
             total += (order[id].qty * order[id].price);
-            summary += `${order[id].name} (x${order[id].qty}), `;
+            let cleanName = order[id].name.substring(0, 15).padEnd(16, ' ');
+            renderText += `${cleanName} (x${order[id].qty})\n`;
         }
         document.getElementById("total").innerText = "Rp " + total.toLocaleString('id-ID');
-        document.getElementById("cart-list-text").innerText = summary.slice(0, -2);
+        document.getElementById("cart-list-render").innerText = renderText;
         document.getElementById("cart").classList.toggle("hide", total === 0);
     }
 
-    function kirimWA() {
-        const n = document.getElementById("f_nama").value;
-        const a = document.getElementById("f_alamat").value;
-        if(!n || !a) return alert("Isi Nama & Alamat dulu bos!");
+    async function prosesPemesanan() {
+        const nama = document.getElementById("f_nama").value;
+        const wa = document.getElementById("f_wa").value;
+        const almt = document.getElementById("f_alamat").value;
 
-        let m = `*ORDER DUTA TERANG LED*\n`;
-        m += `----------------------------\n`;
-        for(let id in order) m += `✅ ${order[id].name} (x${order[id].qty})\n`;
-        m += `----------------------------\n`;
-        m += `*Total: ${document.getElementById("total").innerText}*\n\n`;
-        m += `*DATA PEMESAN:*\n`;
-        m += `👤 Nama: ${n}\n`;
-        m += `📍 Alamat: ${a}\n`;
-        m += `🏠 RT/RW: ${document.getElementById("f_rtrw").value}\n`;
-        m += `🏘️ Desa: ${document.getElementById("f_desa").value}\n`;
-        m += `🏙️ Kec/Kab: ${document.getElementById("f_kec").value} / ${document.getElementById("f_kab").value}\n`;
-        m += `💳 Pembayaran: ${document.getElementById("f_bayar").value}\n\n`;
-        m += `_Mohon segera diproses, terima kasih!_`;
+        if(!nama || !wa || !almt) return alert("Mohon lengkapi Nama, WA, dan Alamat!");
 
+        // 1. Simpan ke Google Sheet
+        const dataSheet = {
+            nama: nama,
+            whatsapp: wa,
+            alamat: `${almt}, RT/RW: ${document.getElementById("f_rtrw").value}, Desa: ${document.getElementById("f_desa").value}`,
+            total: document.getElementById("total").innerText,
+            pesanan: document.getElementById("cart-list-render").innerText,
+            pembayaran: document.getElementById("f_bayar").value
+        };
+
+        // Kirim data ke API Sheet Anda (Pastikan Apps Script Anda mendukung doPost)
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify(dataSheet)
+        }).catch(err => console.log("Gagal simpan sheet, tapi tetap lanjut WA."));
+
+        // 2. Kirim ke WhatsApp
+        let m = `*ORDER DUTA TERANG*\n\n`;
+        for(let id in order) m += `• ${order[id].name.padEnd(20, ' ')} (x${order[id].qty})\n`;
+        m += `\n*Total: ${dataSheet.total}*\n\n`;
+        m += `Penerima: ${nama}\nWA: ${wa}\nAlamat: ${dataSheet.alamat}\nBayar: ${dataSheet.pembayaran}`;
+        
         window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(m)}`);
     }
 
-    function filter(cat, btn) {
-        document.querySelectorAll(".card").forEach(c => c.style.display = (cat==='all' || c.dataset.cat===cat)?'flex':'none');
-        document.querySelectorAll(".category button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-    }
-
-    function resetCart() {
-        if(!confirm("Hapus semua pesanan?")) return;
-        order = {};
-        document.querySelectorAll("[id^='qty-']").forEach(e => e.innerText = "0");
-        updateCart();
-    }
-
+    function openZoom(url) { document.getElementById("imgZoom").src = url; document.getElementById("zoomModal").style.display = 'flex'; }
+    function resetCart() { order = {}; updateCart(); document.querySelectorAll("[id^='qty-']").forEach(e => e.innerText = "0"); }
     function autoFillForm() {
-        const ids = ['f_nama','f_alamat','f_rtrw','f_desa','f_kec','f_kab'];
-        ids.forEach(id => {
-            const saved = localStorage.getItem(id);
-            if(saved) document.getElementById(id).value = saved;
+        ['f_nama','f_wa','f_alamat','f_rtrw','f_desa'].forEach(id => {
+            document.getElementById(id).value = localStorage.getItem(id) || '';
             document.getElementById(id).addEventListener('input', e => localStorage.setItem(id, e.target.value));
         });
     }
-
-    load();
 </script>
 </body>
 </html>
