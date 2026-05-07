@@ -144,14 +144,20 @@
 
 <div class="container" id="list">Memuat...</div>
 
+<!-- Bagian Keranjang Belanja -->
 <div id="cart" class="hide">
     <div class="cart-left">
         <button onclick="resetCart()" style="background:var(--danger); border:none; padding:8px; border-radius:8px; color:#fff; cursor:pointer;">🗑️hapus</button>
     </div>
     <div class="cart-right">
+        <!-- Tambahan Input Data Pembeli -->
+        <input type="text" id="buyer-name" placeholder="Nama Penerima" style="width:100%; margin-bottom:5px; padding:8px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+        <textarea id="buyer-addr" placeholder="Alamat & Kota" style="width:100%; margin-bottom:5px; padding:8px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;"></textarea>
+        
         <div id="cart-list"></div>
         <div id="total">Rp 0</div>
-        <a id="btn-wa" href="#">KIRIM WA</a>
+        <!-- Tombol sekarang memanggil fungsi handleKirimWA() -->
+        <button id="btn-wa" onclick="handleKirimWA()" style="background:var(--wa); color:#fff; border:none; padding:10px 20px; border-radius:8px; width:100%; font-weight:bold; cursor:pointer;">KIRIM WA</button>
     </div>
 </div>
 
@@ -288,7 +294,79 @@
         
         localStorage.setItem("duta_terang_cart", JSON.stringify({ order }));
     }
+// Tambahkan di dalam <script>
 
+async function handleKirimWA() {
+    const btn = document.getElementById("btn-wa");
+    const nama = document.getElementById("buyer-name").value;
+    const alamat = document.getElementById("buyer-addr").value;
+
+    if (!nama || !alamat) {
+        alert("Mohon isi Nama dan Alamat dulu ya kak.");
+        return;
+    }
+
+    // Ubah tampilan tombol saat proses simpan
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Menyimpan...";
+    btn.style.pointerEvents = "none";
+
+    let totalHarga = 0;
+    let listPesanan = "";
+    let waText = `Halo Duta Terang, saya mau pesan:%0A%0A`;
+    
+    for (let id in order) {
+        if (order[id].qty > 0) {
+            totalHarga += (order[id].qty * order[id].price);
+            listPesanan += `${order[id].name} (x${order[id].qty}), `;
+            waText += `✅ *${order[id].name}* (x${order[id].qty})%0A`;
+        }
+    }
+
+    const dataPesanan = {
+        nama: nama,
+        alamat: alamat,
+        pesanan: listPesanan,
+        total: totalHarga
+    };
+
+    try {
+        // Kirim ke Google Sheets
+        await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify(dataPesanan)
+        });
+        
+        // Simpan identitas ke local agar besok tidak perlu ketik lagi
+        localStorage.setItem("duta_terang_user", JSON.stringify({nama, alamat}));
+
+        // Buka WA
+        waText += `%0A💰 *Total: ${rupiah(totalHarga)}*`;
+        waText += `%0A%0A👤 *Data Pengirim:*%0A- Nama: ${nama}%0A- Alamat: ${alamat}`;
+        
+        window.location.href = "https://wa.me/6288224166270?text=" + waText;
+        
+    } catch (e) {
+        console.error(e);
+        alert("Gagal terhubung ke server, tapi tetap bisa order via WA.");
+        window.location.href = "https://wa.me/6288224166270?text=" + waText;
+    } finally {
+        btn.innerText = originalText;
+        btn.style.pointerEvents = "auto";
+    }
+}
+
+// Update fungsi loadFromLocal agar otomatis isi nama & alamat
+function loadFromLocal() {
+    // ... kode load cart Anda yang lama ...
+    
+    const user = localStorage.getItem("duta_terang_user");
+    if (user) {
+        const userData = JSON.parse(user);
+        if(document.getElementById("buyer-name")) document.getElementById("buyer-name").value = userData.nama;
+        if(document.getElementById("buyer-addr")) document.getElementById("buyer-addr").value = userData.alamat;
+    }
+}
     function filter(cat, btn) {
         document.querySelectorAll(".card").forEach(c => {
             c.style.display = (cat === 'all' || c.dataset.cat === cat) ? 'flex' : 'none';
