@@ -133,14 +133,18 @@
 
     window.onload = () => { 
         load(); 
-        if(!localStorage.getItem('promo_v6_duta')) {
-            setTimeout(() => { document.getElementById('installModal').style.display = 'flex'; }, 1500);
+        // Menggunakan sessionStorage agar popup hanya muncul 1x selama browser belum ditutup
+        if(!sessionStorage.getItem('promo_per_sesi')) {
+            setTimeout(() => { 
+                document.getElementById('installModal').style.display = 'flex'; 
+            }, 1500);
         }
     };
 
     function closeModal() {
         document.getElementById('installModal').style.display = 'none';
-        localStorage.setItem('promo_v6_duta', 'true');
+        // Menyimpan status bahwa user sudah melihat promo di sesi ini
+        sessionStorage.setItem('promo_per_sesi', 'true');
     }
 
     async function actionInstall() {
