@@ -174,11 +174,20 @@
             const disc = Number(p.diskon) || 0;
             const hrgFix = p.harga - (p.harga * disc / 100);
             const isHabis = p.stok <= 0;
+
             html += `
             <div class="card" data-category="${(p.kategori||'').toLowerCase()}">
-                ${isHabis ? '<div style="position:absolute; inset:0; background:rgba(255,255,255,0.7); color:red; display:flex; align-items:center; justify-content:center; font-weight:900; z-index:5; border-radius:10px;">HABIS</div>' : ''}
+                ${isHabis ? '<div style="position:absolute; inset:0; background:rgba(255,255,255,0.7); color:red; display:flex; align-items:center; justify-content:center; font-weight:900; z-index:10; border-radius:10px;">HABIS</div>' : ''}
+                
+                <!-- BADGE DISKON POJOK KANAN -->
+                ${disc > 0 && !isHabis ? `<div style="position:absolute; top:5px; right:5px; background:var(--pink); color:white; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:5px; z-index:5;">-${disc}%</div>` : ''}
+                
                 <img src="${p.gambar || 'https://via.placeholder.com/150'}" onclick="openZoom('${p.gambar}')">
                 <div class="product-name">${p.nama}</div>
+                
+                <!-- HARGA CORET BIRU -->
+                ${disc > 0 ? `<div style="text-decoration:line-through; color:var(--blue-old); font-size:10px; margin-top:2px;">Rp ${Number(p.harga).toLocaleString('id-ID')}</div>` : '<div style="height:12px;"></div>'}
+                
                 <div class="price-new">Rp ${hrgFix.toLocaleString('id-ID')}</div>
                 <div class="qty-wrapper">
                     <button onclick="changeQty('${p.id}', -1, ${hrgFix}, '${p.nama}')" ${isHabis?'disabled':''}>-</button>
@@ -188,13 +197,13 @@
             </div>`;
         });
         document.getElementById("list").innerHTML = html;
+        
         let catHtml = '<button onclick="filter(\'all\', this)" style="border:1px solid var(--primary); padding:6px 12px; border-radius:20px; background:var(--primary); color:#fff; font-size:11px; white-space:nowrap; font-weight:bold;">Semua</button>';
         kategori.forEach(k => {
             catHtml += `<button onclick="filter('${k.toLowerCase()}', this)" style="border:1px solid #ddd; padding:6px 12px; border-radius:20px; background:#fff; font-size:11px; white-space:nowrap; margin-left:5px; color:#666;">${k}</button>`;
         });
         document.getElementById("cat-bar").innerHTML = catHtml;
     }
-
     function changeQty(id, delta, price, name) {
         if (!order[id]) order[id] = { qty: 0, name, price };
         order[id].qty += delta;
