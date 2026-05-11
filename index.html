@@ -109,6 +109,11 @@
     pointer-events: none;
 }
     </style>
+    <head>
+    <link rel="preconnect" href="https://i.imghippo.com">
+    <link rel="preconnect" href="https://script.googleusercontent.com">
+    <!-- ... tag lainnya ... -->
+</head>
 </head>
 <body>
 
@@ -390,6 +395,17 @@ html += `
         window.open(waUrl, '_blank');
     }
 }
+    // Di dalam fungsi looping produk Anda:
+const html = `
+<div class="card">
+    <img src="${p.gambar}" 
+         loading="lazy" 
+         width="110" 
+         height="110" 
+         onclick="openZoom('${p.gambar}')" 
+         alt="${p.nama}">
+    <!-- ... sisa kode kartu produk ... -->
+</div>`;
 </script>
 </body>
 </html>
