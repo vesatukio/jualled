@@ -111,22 +111,28 @@
         <div style="font-weight: 900; font-size: 18px; letter-spacing: 1px;">DUTA TERANG LED</div>
         <div style="font-size: 11px; background: rgba(0,0,0,0.15); padding: 5px 12px; border-radius: 20px;">📲 1.284 Terpasang</div>
     </header>
-    <div class="promo-running" style="background: #f1f1f1; padding: 10px 0; border-bottom: 2px solid #ddd;">
+    <<!-- 1. Bagian Marquee: Promo dan Statistik dalam SATU BARIS -->
+<div class="promo-running" style="background: #f1f1f1; padding: 10px 0; border-bottom: 2px solid #ddd;">
     <marquee scrollamount="5" style="font-family: Arial, sans-serif; font-weight: bold; color: #333;">
         
         <!-- Teks Promo -->
         <span>📢 INFO: Sparepart LED Berkualitas | Ready Stok LED AC 5W-50W | Bisa COD (Bayar di Tempat) | Garansi Terjamin</span>
         
-        <!-- Jeda Spasi -->
+        <!-- Jeda Spasi Antara Promo & Statistik -->
         <span style="margin: 0 50px;"> | </span>
         
-        <!-- Statistik (Akan muncul di sebelah kanan teks promo dan ikut lari) -->
+        <!-- Statistik (Tetap di dalam marquee agar ikut lari) -->
         <span id="histats_counter" style="display: inline-block; vertical-align: middle;"></span>
         
     </marquee>
 </div>
 
-<!-- Script Histats -->
+<!-- 2. Bagian Daftar Produk (List dari Server) -->
+<div id="list" class="container">
+    <p style="text-align: center; padding: 50px; color: #888;">Menghubungkan ke server...</p>
+</div>
+
+<!-- 3. Script Histats (Letakkan di bawah agar tidak menghambat loading utama) -->
 <script type="text/javascript">
     var _Hasync = _Hasync || [];
     _Hasync.push(['Histats.start', '1,1760694,4,24,200,50,00010111']);
@@ -145,7 +151,6 @@
         <img src="//sstatic1.histats.com/0.gif?1760694&101" alt="web stats" border="0">
     </a>
 </noscript>
-    </div>
 
 <div id="list" class="container">
     <p style="grid-column: span 2; text-align: center; padding: 50px; color: #888;">Menghubungkan ke server...</p>
