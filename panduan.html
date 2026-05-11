@@ -14,61 +14,24 @@
         .container { padding: 10px; max-width: 800px; margin: auto; }
         h2 { font-size: 14px; margin: 25px 5px 10px; border-left: 4px solid var(--primary); padding-left: 10px; text-transform: uppercase; color: #555; }
 
-        /* Grid System: Judul Full & Baris Rata */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; 
-            align-items: stretch; 
-        }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: stretch; }
 
-        .card { 
-            background: #fff; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            display: flex; 
-            flex-direction: column; 
-            cursor: pointer; 
-            height: 100%; 
-            border: 1px solid #eee;
-        }
+        .card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; cursor: pointer; height: 100%; border: 1px solid #eee; }
         
-        .thumb { 
-            width: 100%; 
-            height: 75px; 
-            background: #222; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            flex-shrink: 0; 
-        }
+        .thumb { width: 100%; height: 75px; background: #222; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .play-btn { position: absolute; color: white; font-size: 20px; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
 
-        .card-body { 
-            padding: 8px 5px; 
-            flex-grow: 1; 
-            display: flex; 
-            align-items: flex-start; 
-            justify-content: center;
-        }
+        .card-body { padding: 8px 5px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .card-title { font-size: 10px; font-weight: bold; line-height: 1.3; color: #222; text-align: center; white-space: normal; }
 
-        /* Judul Full Tanpa Terpotong */
-        .card-title { 
-            font-size: 11px; 
-            font-weight: bold; 
-            line-height: 1.3; 
-            color: #222; 
-            text-align: center;
-            white-space: normal;
-            word-wrap: break-word;
-        }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 90vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; }
+        .close-modal { position: sticky; top: 0; float: right; background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 50%; font-weight: bold; cursor: pointer; z-index: 10; }
+        .modal-body { line-height: 1.7; font-size: 14px; margin-top: 15px; white-space: pre-wrap; color: #444; }
 
-        /* Modal View */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; box-sizing: border-box; }
-        .close-modal { position: sticky; top: 0; float: right; background: #f0f0f0; border: none; padding: 10px; border-radius: 50%; font-weight: bold; cursor: pointer; }
-        .modal-body { line-height: 1.7; font-size: 15px; margin-top: 15px; white-space: pre-wrap; color: #444; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
         .loading { text-align: center; padding: 50px; color: #888; }
         .hide { display: none; }
@@ -82,7 +45,7 @@
 </nav>
 
 <div class="container">
-    <div id="loader" class="loading">Memuat Data Lengkap...</div>
+    <div id="loader" class="loading">Menghubungkan ke database YouTube...</div>
 
     <section id="sec-video" class="hide">
         <h2>📽️ VIDEO TUTORIAL</h2>
@@ -106,7 +69,14 @@
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAd4pEtxlxD_EaVYx4L_vhhz0U3WmPYNxOXENt1NiTEGRZjpoIECzIRQSQDYhmjGQQYGN6VaMUuQ-C/pub?gid=287695265&single=true&output=csv";
     let database = [];
 
-    // Fungsi Parser CSV yang lebih kuat untuk menangani kalimat panjang & spasi
+    // Fungsi Pengolah Link YouTube agar bisa tampil
+    function getYoutubeId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
     function parseCSV(text) {
         const lines = text.split(/\r?\n/);
         return lines.map(line => {
@@ -129,7 +99,7 @@
         try {
             const response = await fetch(CSV_URL);
             const csvText = await response.text();
-            const rows = parseCSV(csvText).slice(1); // Gunakan parser baru
+            const rows = parseCSV(csvText).slice(1);
             
             let vHtml = "", aHtml = "";
 
@@ -145,13 +115,17 @@
                     tgl: cols[4]?.trim() || "",
                     kat: cols[5]?.trim() || ""
                 };
+                
+                const vidId = getYoutubeId(item.link);
+                item.youtubeId = vidId;
                 database.push(item);
 
                 const cardHtml = `
                     <div class="card" onclick="openContent(${index})">
                         <div class="thumb" ${item.tipe === 'artikel' ? 'style="background:var(--primary)"' : ''}>
-                            ${item.tipe === 'video' ? 
-                                `<img src="https://img.youtube.com/vi/${item.link.split('embed/')[1] || item.link.split('/').pop()}/mqdefault.jpg">` : 
+                            ${item.tipe === 'video' && vidId ? 
+                                `<img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg">
+                                 <div class="play-btn">▶</div>` : 
                                 `<span style="font-size:28px; color:white;">📄</span>`
                             }
                         </div>
@@ -175,16 +149,19 @@
     function openContent(id) {
         const item = database[id];
         const ui = document.getElementById('modal-ui');
-        if(item.tipe === 'video') {
+        
+        if(item.tipe === 'video' && item.youtubeId) {
             ui.innerHTML = `
-                <iframe style="width:100%; aspect-ratio:16/9; border-radius:10px; border:0" src="${item.link}" allowfullscreen></iframe>
-                <h3 style="margin-top:15px; color:var(--primary);">${item.judul}</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/${item.youtubeId}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                </div>
+                <h3 style="margin-top:15px; color:var(--primary); font-size:16px;">${item.judul}</h3>
                 <div class="modal-body">${item.isi}</div>`;
         } else {
             ui.innerHTML = `
                 <h2 style="color:var(--primary); font-size:18px;">${item.judul}</h2>
-                <div style="font-size:12px; color:#999; margin-bottom:10px;">📅 ${item.tgl} | ${item.kat}</div>
-                <hr style="border:0; border-top:1px solid #eee;">
+                <div style="font-size:12px; color:#999;">📅 ${item.tgl} | ${item.kat}</div>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                 <div class="modal-body">${item.isi}</div>`;
         }
         document.getElementById('modal').style.display = 'flex';
@@ -194,6 +171,7 @@
     function closeModal() {
         document.getElementById('modal').style.display = 'none';
         document.body.style.overflow = 'auto';
+        document.getElementById('modal-ui').innerHTML = '';
     }
 
     window.onload = loadData;
