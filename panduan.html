@@ -6,93 +6,79 @@
     <title>Edukasi Duta Terang</title>
     <style>
         :root { --primary: #00bcd4; --bg: #f5f6f8; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
 
-        /* Header */
+        /* Navbar */
         .nav { background: var(--primary); padding: 15px; color: white; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .nav a { text-decoration: none; color: white; font-size: 18px; font-weight: bold; margin-right: 15px; }
 
         .container { padding: 10px; max-width: 800px; margin: auto; }
-        h2 { font-size: 15px; margin: 20px 5px 10px; border-left: 4px solid var(--primary); padding-left: 10px; text-transform: uppercase; color: #555; }
+        h2 { font-size: 14px; margin: 20px 5px 10px; border-left: 4px solid var(--primary); padding-left: 10px; text-transform: uppercase; }
 
-        /* Grid System - Kunci Rapi */
+        /* Grid System: Kunci agar judul tidak terpotong */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 8px; 
-            align-items: stretch; /* Memastikan semua kartu dalam 1 baris tingginya sama */
+            gap: 10px; 
+            align-items: stretch; /* Membuat semua card dalam satu baris sama tinggi */
         }
 
         /* Card Style */
         .card { 
             background: #fff; 
-            border-radius: 8px; 
+            border-radius: 10px; 
             overflow: hidden; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); 
             display: flex; 
             flex-direction: column; 
             cursor: pointer; 
             height: 100%; 
-            transition: transform 0.2s; 
+            border: 1px solid #eee;
         }
-        .card:active { transform: scale(0.96); }
-        
-        /* Thumbnail Area */
+
+        /* Thumbnail */
         .thumb { 
             width: 100%; 
-            height: 70px; 
-            background: #000; 
+            height: 80px; 
+            background: #222; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            position: relative; 
-            flex-shrink: 0;
+            position: relative;
+            flex-shrink: 0; 
         }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        .play-icon { position: absolute; color: white; font-size: 20px; text-shadow: 0 0 8px rgba(0,0,0,0.6); }
-        
-        /* Body Card - Menampilkan Judul Full */
+        .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .play-icon { position: absolute; color: white; font-size: 24px; opacity: 0.9; }
+
+        /* Judul Full (Tanpa Batasan) */
         .card-body { 
-            padding: 8px 5px; 
+            padding: 10px 5px; 
             flex-grow: 1; 
             display: flex; 
-            align-items: center; 
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-start; /* Judul mulai dari atas */
+            background: #fff;
         }
         .card-title { 
-            font-size: 10px; 
-            font-weight: bold; 
-            line-height: 1.3; 
+            font-size: 11px; 
+            font-weight: 700; 
+            line-height: 1.4; 
             color: #222; 
             text-align: center; 
-            word-wrap: break-word; /* Memotong kata jika terlalu panjang */
+            /* Menghapus semua limitasi */
+            display: block; 
+            overflow: visible; 
+            white-space: normal; 
+            word-wrap: break-word;
         }
 
-        /* Modal Full Content */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
-        .modal-content { 
-            background: white; 
-            width: 100%; 
-            max-width: 500px; 
-            max-height: 85vh; 
-            border-radius: 15px; 
-            overflow-y: auto; 
-            padding: 20px; 
-            position: relative; 
-            box-sizing: border-box; 
-        }
-        .close-modal { position: sticky; top: 0; float: right; background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 50%; font-weight: bold; cursor: pointer; z-index: 10; }
-        
-        /* Isi Artikel/Video di Modal */
-        .modal-body { 
-            line-height: 1.7; 
-            font-size: 15px; 
-            margin-top: 15px; 
-            color: #333; 
-            white-space: pre-wrap; /* Menjaga format Enter/Paragraf dari Google Sheets */
-        }
+        /* Modal View */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; box-sizing: border-box; }
+        .close-modal { position: sticky; top: 0; float: right; background: #eee; border: none; padding: 10px; border-radius: 50%; font-weight: bold; cursor: pointer; }
+        .modal-body { line-height: 1.8; font-size: 15px; margin-top: 15px; white-space: pre-wrap; color: #444; }
 
-        .loading { text-align: center; padding: 50px; color: #888; font-size: 14px; font-weight: bold; }
+        .loading { text-align: center; padding: 50px; color: #888; }
         .hide { display: none; }
     </style>
 </head>
@@ -104,7 +90,7 @@
 </nav>
 
 <div class="container">
-    <div id="loader" class="loading">Menghubungkan ke Database...</div>
+    <div id="loader" class="loading">Sinkronisasi Data...</div>
 
     <section id="sec-video" class="hide">
         <h2>📽️ VIDEO TUTORIAL</h2>
@@ -117,7 +103,6 @@
     </section>
 </div>
 
-<!-- Modal untuk View Full Content -->
 <div id="modal" class="modal" onclick="if(event.target == this) closeModal()">
     <div class="modal-content">
         <button class="close-modal" onclick="closeModal()">✕</button>
@@ -127,25 +112,20 @@
 
 <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAd4pEtxlxD_EaVYx4L_vhhz0U3WmPYNxOXENt1NiTEGRZjpoIECzIRQSQDYhmjGQQYGN6VaMUuQ-C/pub?gid=287695265&single=true&output=csv";
-
     let database = [];
 
     async function loadData() {
         try {
             const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error('Network error');
             const csvText = await response.text();
-            
             const rows = csvText.split(/\r?\n/).slice(1);
             let vHtml = "", aHtml = "";
 
             rows.forEach((row, index) => {
-                // Regex sakti untuk menangani koma di dalam teks artikel (tanda kutip)
                 const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
                 if(cols.length < 3) return;
 
                 const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : "";
-
                 const item = {
                     id: index,
                     tipe: clean(cols[0]).toLowerCase(),
@@ -156,78 +136,53 @@
                 };
                 database.push(item);
 
-                if(item.tipe === 'video') {
-                    const vidId = item.link.includes('v=') ? item.link.split('v=')[1].split('&')[0] : item.link.split('/').pop();
-                    vHtml += `
+                const cardHtml = `
                     <div class="card" onclick="openContent(${index})">
-                        <div class="thumb">
-                            <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" onerror="this.src='https://placehold.co/400x225?text=Video+Duta+Terang'">
-                            <span class="play-icon">▶</span>
+                        <div class="thumb" ${item.tipe === 'artikel' ? 'style="background:var(--primary)"' : ''}>
+                            ${item.tipe === 'video' ? 
+                                `<img src="https://img.youtube.com/vi/${item.link.split('v=')[1]?.split('&')[0] || item.link.split('/').pop()}/mqdefault.jpg">
+                                 <span class="play-icon">▶</span>` : 
+                                `<span style="font-size:30px; color:white;">📄</span>`
+                            }
                         </div>
                         <div class="card-body">
                             <div class="card-title">${item.judul}</div>
                         </div>
                     </div>`;
-                } else if(item.tipe === 'artikel') {
-                    aHtml += `
-                    <div class="card" onclick="openContent(${index})">
-                        <div class="thumb" style="background:var(--primary); color:white; font-size:28px;">📄</div>
-                        <div class="card-body">
-                            <div class="card-title">${item.judul}</div>
-                        </div>
-                    </div>`;
-                }
+
+                if(item.tipe === 'video') vHtml += cardHtml;
+                else aHtml += cardHtml;
             });
 
             document.getElementById('loader').classList.add('hide');
-            
-            if(vHtml) {
-                document.getElementById('grid-video').innerHTML = vHtml;
-                document.getElementById('sec-video').classList.remove('hide');
-            }
-            if(aHtml) {
-                document.getElementById('grid-artikel').innerHTML = aHtml;
-                document.getElementById('sec-artikel').classList.remove('hide');
-            }
-
+            if(vHtml) { document.getElementById('grid-video').innerHTML = vHtml; document.getElementById('sec-video').classList.remove('hide'); }
+            if(aHtml) { document.getElementById('grid-artikel').innerHTML = aHtml; document.getElementById('sec-artikel').classList.remove('hide'); }
         } catch (e) {
-            document.getElementById('loader').innerText = "Gagal memuat data. Periksa koneksi internet.";
-            console.error(e);
+            document.getElementById('loader').innerText = "Gagal memuat. Pastikan Sheet dipublish.";
         }
     }
 
     function openContent(id) {
         const item = database[id];
         const ui = document.getElementById('modal-ui');
-        
         if(item.tipe === 'video') {
             const embed = item.link.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
             ui.innerHTML = `
                 <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;background:#000;">
-                    <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${embed}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${embed}?autoplay=1" allowfullscreen></iframe>
                 </div>
-                <h3 style="margin-top:18px; font-size:18px; line-height:1.4; color:var(--primary);">${item.judul}</h3>
-                <div class="modal-body" style="font-size:14px; color:#555;">${item.isi}</div>
-            `;
+                <h3 style="margin-top:15px;">${item.judul}</h3>
+                <div class="modal-body">${item.isi}</div>`;
         } else {
-            ui.innerHTML = `
-                <h2 style="color:var(--primary); font-size:20px; margin-top:0; line-height:1.4;">${item.judul}</h2>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <small style="color:#999">📅 ${item.tgl || 'Terbaru'}</small>
-                    <small style="background:#e0f7fa; color:#00838f; padding:2px 8px; border-radius:10px; font-size:10px;">ARTIKEL TEKNIK</small>
-                </div>
-                <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-                <div class="modal-body">${item.isi}</div>
-            `;
+            ui.innerHTML = `<h2 style="color:var(--primary);">${item.judul}</h2><div class="modal-body">${item.isi}</div>`;
         }
         document.getElementById('modal').style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Kunci scroll background
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
         document.getElementById('modal').style.display = 'none';
-        document.getElementById('modal-ui').innerHTML = '';
-        document.body.style.overflow = 'auto'; // Aktifkan kembali scroll
+        document.body.style.overflow = 'auto';
     }
 
     window.onload = loadData;
