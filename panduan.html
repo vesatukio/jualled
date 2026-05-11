@@ -8,30 +8,35 @@
         :root { --primary: #00bcd4; --bg: #f5f6f8; --text: #333; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 20px; }
 
-        /* Navbar Sticky */
         .nav { background: var(--primary); padding: 15px; color: white; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .nav a { text-decoration: none; color: white; font-size: 18px; font-weight: bold; margin-right: 15px; }
 
         .container { padding: 10px; max-width: 800px; margin: auto; }
-        h2 { font-size: 16px; margin: 20px 5px 10px; border-left: 4px solid var(--primary); padding-left: 10px; }
+        h2 { font-size: 16px; margin: 20px 5px 10px; border-left: 4px solid var(--primary); padding-left: 10px; text-transform: uppercase; }
 
-        /* Grid 3 Kolom Khusus HP */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        /* Grid 3 Kolom */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: start; }
 
         /* Card Style */
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; cursor: pointer; height: 100%; }
-        .thumb { width: 100%; height: 80px; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        .play-icon { position: absolute; color: white; font-size: 24px; opacity: 0.9; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; cursor: pointer; height: 100%; transition: 0.2s; }
+        .card:active { transform: scale(0.95); }
         
-        .card-body { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .card-title { font-size: 11px; font-weight: bold; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; }
+        .thumb { width: 100%; height: 75px; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .play-icon { position: absolute; color: white; font-size: 24px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
+        .card-body { padding: 8px; flex-grow: 1; }
+        /* PERBAIKAN: Judul Full Tanpa Potongan */
+        .card-title { font-size: 11px; font-weight: bold; line-height: 1.3; color: #222; text-align: center; word-wrap: break-word; }
 
         /* Modal Full Artikel */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; box-sizing: border-box; }
         .close-modal { position: sticky; top: 0; float: right; background: #eee; border: none; padding: 8px 12px; border-radius: 50%; font-weight: bold; cursor: pointer; z-index: 10; }
-        .modal-body { line-height: 1.6; font-size: 15px; margin-top: 10px; white-space: pre-wrap; }
+        
+        /* Tampilan Isi Artikel di Modal */
+        .modal-body { line-height: 1.7; font-size: 15px; margin-top: 15px; color: #444; white-space: pre-wrap; }
+        .modal-body b { color: var(--primary); }
 
         .loading { text-align: center; padding: 50px; color: #888; font-size: 14px; }
         .hide { display: none; }
@@ -41,11 +46,11 @@
 
 <nav class="nav">
     <a href="index.html">⬅</a>
-    <span style="font-weight: bold;">PUSAT EDUKASI</span>
+    <span style="font-weight: bold;">PUSAT EDUKASI DUTA TERANG</span>
 </nav>
 
 <div class="container">
-    <div id="loader" class="loading">Menghubungkan ke database...</div>
+    <div id="loader" class="loading">Memuat database sparepart...</div>
 
     <section id="sec-video" class="hide">
         <h2>📽️ VIDEO TUTORIAL</h2>
@@ -72,19 +77,16 @@
 
     async function loadData() {
         try {
-            // PERBAIKAN UTAMA: Langsung ambil sebagai text, jangan .json()
             const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error('Network response was not ok');
-            
+            if (!response.ok) throw new Error('Network error');
             const csvText = await response.text();
             
-            // Parsing CSV sederhana
+            // Parsing baris
             const rows = csvText.split(/\r?\n/).slice(1);
-            
             let vHtml = "", aHtml = "";
 
             rows.forEach((row, index) => {
-                // Menggunakan Regex agar koma di dalam teks artikel tidak merusak kolom
+                // Regex untuk menangani koma di dalam tanda kutip agar artikel tidak pecah
                 const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
                 if(cols.length < 3) return;
 
@@ -101,11 +103,11 @@
                 database.push(item);
 
                 if(item.tipe === 'video') {
-                    const vidId = item.link.split('/').pop().split('?')[0].replace('watch?v=', '');
+                    const vidId = item.link.includes('v=') ? item.link.split('v=')[1].split('&')[0] : item.link.split('/').pop();
                     vHtml += `
                     <div class="card" onclick="openContent(${index})">
                         <div class="thumb">
-                            <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" onerror="this.src='https://placehold.co/400x225?text=Video+LED'">
+                            <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" onerror="this.src='https://placehold.co/400x225?text=Video+Tutorial'">
                             <span class="play-icon">▶</span>
                         </div>
                         <div class="card-body">
@@ -135,7 +137,7 @@
             }
 
         } catch (e) {
-            document.getElementById('loader').innerText = "Gagal memuat data. Pastikan Sheet sudah di-Publish ke Web.";
+            document.getElementById('loader').innerText = "Koneksi database gagal. Periksa Publikasi Sheet.";
             console.error(e);
         }
     }
@@ -150,13 +152,13 @@
                 <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;background:#000;">
                     <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${embed}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
-                <h3 style="margin-top:15px; font-size:18px;">${item.judul}</h3>
-                <p style="font-size:14px; color:#666; line-height:1.5;">${item.isi}</p>
+                <h3 style="margin-top:15px; font-size:18px; line-height:1.4;">${item.judul}</h3>
+                <div class="modal-body" style="font-size:14px; color:#555;">${item.isi}</div>
             `;
         } else {
             ui.innerHTML = `
-                <h2 style="color:var(--primary); font-size:20px; margin-top:0;">${item.judul}</h2>
-                <small style="color:#999">${item.tgl}</small>
+                <h2 style="color:var(--primary); font-size:19px; margin-top:0; line-height:1.4;">${item.judul}</h2>
+                <small style="color:#999">Update: ${item.tgl || '-'}</small>
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                 <div class="modal-body">${item.isi}</div>
             `;
