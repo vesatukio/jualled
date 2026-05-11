@@ -19,19 +19,19 @@
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
         /* Card Style */
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; cursor: pointer; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; cursor: pointer; height: 100%; }
         .thumb { width: 100%; height: 80px; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         .play-icon { position: absolute; color: white; font-size: 24px; opacity: 0.9; }
         
-        .card-body { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-title { font-size: 11px; font-weight: bold; line-height: 1.3; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .card-body { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .card-title { font-size: 11px; font-weight: bold; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-align: center; }
 
         /* Modal Full Artikel */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 80vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; }
-        .close-modal { position: sticky; top: 0; float: right; background: #eee; border: none; padding: 5px 10px; border-radius: 50%; font-weight: bold; }
-        .modal-body { line-height: 1.6; font-size: 15px; margin-top: 10px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 15px; overflow-y: auto; padding: 20px; position: relative; box-sizing: border-box; }
+        .close-modal { position: sticky; top: 0; float: right; background: #eee; border: none; padding: 8px 12px; border-radius: 50%; font-weight: bold; cursor: pointer; z-index: 10; }
+        .modal-body { line-height: 1.6; font-size: 15px; margin-top: 10px; white-space: pre-wrap; }
 
         .loading { text-align: center; padding: 50px; color: #888; font-size: 14px; }
         .hide { display: none; }
@@ -58,8 +58,7 @@
     </section>
 </div>
 
-<!-- MODAL UNTUK BACA FULL ARTIKEL / VIDEO -->
-<div id="modal" class="modal">
+<div id="modal" class="modal" onclick="if(event.target == this) closeModal()">
     <div class="modal-content">
         <button class="close-modal" onclick="closeModal()">✕</button>
         <div id="modal-ui"></div>
@@ -73,42 +72,47 @@
 
     async function loadData() {
         try {
-            const res = await fetch(CSV_URL);
-            const text = await res.json(); // Jika CSV gunakan res.text()
-            // Karena link Anda CSV, kita gunakan parsing text
-            const csvText = await (await fetch(CSV_URL)).text();
-            const rows = csvText.split('\n').slice(1);
+            // PERBAIKAN UTAMA: Langsung ambil sebagai text, jangan .json()
+            const response = await fetch(CSV_URL);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const csvText = await response.text();
+            
+            // Parsing CSV sederhana
+            const rows = csvText.split(/\r?\n/).slice(1);
             
             let vHtml = "", aHtml = "";
 
             rows.forEach((row, index) => {
-                const cols = row.split(',');
+                // Menggunakan Regex agar koma di dalam teks artikel tidak merusak kolom
+                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
                 if(cols.length < 3) return;
+
+                const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : "";
 
                 const item = {
                     id: index,
-                    tipe: cols[0].trim().toLowerCase(),
-                    judul: cols[1],
-                    isi: cols[2],
-                    link: cols[3],
-                    tgl: cols[4] || ""
+                    tipe: clean(cols[0]).toLowerCase(),
+                    judul: clean(cols[1]),
+                    isi: clean(cols[2]),
+                    link: clean(cols[3]),
+                    tgl: clean(cols[4]) || ""
                 };
                 database.push(item);
 
                 if(item.tipe === 'video') {
-                    // Ambil ID Video YouTube untuk Thumbnail
-                    const vidId = item.link.split('/').pop();
+                    const vidId = item.link.split('/').pop().split('?')[0].replace('watch?v=', '');
                     vHtml += `
                     <div class="card" onclick="openContent(${index})">
                         <div class="thumb">
-                            <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg">
+                            <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" onerror="this.src='https://placehold.co/400x225?text=Video+LED'">
                             <span class="play-icon">▶</span>
                         </div>
                         <div class="card-body">
                             <div class="card-title">${item.judul}</div>
                         </div>
                     </div>`;
-                } else {
+                } else if(item.tipe === 'artikel') {
                     aHtml += `
                     <div class="card" onclick="openContent(${index})">
                         <div class="thumb" style="background:var(--primary); color:white; font-size:30px;">📄</div>
@@ -120,13 +124,19 @@
             });
 
             document.getElementById('loader').classList.add('hide');
-            document.getElementById('grid-video').innerHTML = vHtml;
-            document.getElementById('grid-artikel').innerHTML = aHtml;
-            document.getElementById('sec-video').classList.remove('hide');
-            document.getElementById('sec-artikel').classList.remove('hide');
+            
+            if(vHtml) {
+                document.getElementById('grid-video').innerHTML = vHtml;
+                document.getElementById('sec-video').classList.remove('hide');
+            }
+            if(aHtml) {
+                document.getElementById('grid-artikel').innerHTML = aHtml;
+                document.getElementById('sec-artikel').classList.remove('hide');
+            }
 
         } catch (e) {
-            document.getElementById('loader').innerText = "Gagal memuat data.";
+            document.getElementById('loader').innerText = "Gagal memuat data. Pastikan Sheet sudah di-Publish ke Web.";
+            console.error(e);
         }
     }
 
@@ -137,22 +147,22 @@
         if(item.tipe === 'video') {
             const embed = item.link.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
             ui.innerHTML = `
-                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;">
-                    <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${embed}" allowfullscreen></iframe>
+                <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;background:#000;">
+                    <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${embed}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
-                <h3 style="margin-top:15px">${item.judul}</h3>
-                <p style="font-size:14px; color:#666">${item.isi}</p>
+                <h3 style="margin-top:15px; font-size:18px;">${item.judul}</h3>
+                <p style="font-size:14px; color:#666; line-height:1.5;">${item.isi}</p>
             `;
         } else {
             ui.innerHTML = `
-                <h2 style="color:var(--primary)">${item.judul}</h2>
+                <h2 style="color:var(--primary); font-size:20px; margin-top:0;">${item.judul}</h2>
                 <small style="color:#999">${item.tgl}</small>
                 <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-                <div class="modal-body">${item.isi.replace(/\n/g, '<br>')}</div>
+                <div class="modal-body">${item.isi}</div>
             `;
         }
         document.getElementById('modal').style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Stop scroll background
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
