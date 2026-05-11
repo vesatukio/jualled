@@ -5,84 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edukasi Duta Terang</title>
     <style>
-        :root { --primary: #00bcd4; --bg: #f4f7f6; }
-        body { font-family: sans-serif; margin: 0; background: var(--bg); padding-bottom: 50px; }
+        :root { --primary: #00bcd4; --bg: #f8f9fa; --text: #333; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
         
-        /* Navigasi */
-        .nav { background: #fff; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .nav a { text-decoration: none; color: var(--primary); font-weight: bold; }
+        /* Navbar */
+        .nav { background: #fff; padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .nav a { text-decoration: none; color: var(--primary); font-weight: bold; display: flex; align-items: center; gap: 8px; }
 
-        .container { max-width: 1100px; margin: auto; padding: 20px; }
-        h2 { border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 40px; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        h2 { border-left: 5px solid var(--primary); padding-left: 15px; margin: 40px 0 20px; font-size: 22px; }
 
         /* Grid System 3 Kolom */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
         /* Video Card */
-        .v-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .v-wrap { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
-        .v-wrap iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
-        .v-info { padding: 12px; font-size: 14px; font-weight: bold; }
+        .card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        
+        .card-body { padding: 15px; }
+        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; line-height: 1.4; }
+        .card-desc { font-size: 13px; color: #666; line-height: 1.5; }
+        .card-meta { font-size: 11px; color: #999; margin-top: 10px; display: block; }
 
-        /* Artikel Card */
-        .a-card { background: #fff; padding: 20px; border-radius: 10px; border-top: 4px solid var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .a-card h3 { margin-top: 0; font-size: 16px; }
-        .a-card p { font-size: 13px; color: #666; line-height: 1.5; }
+        /* Status Loading */
+        #loader { text-align: center; padding: 50px; color: #888; }
 
-        @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        /* Responsif */
+        @media (max-width: 992px) { .grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="nav">
-    <a href="index.html">⬅️ Kembali ke Beranda</a>
-</div>
+<nav class="nav">
+    <a href="index.html"><span>⬅️</span> Kembali ke Beranda</a>
+</nav>
 
 <div class="container">
-    <h2>📽️ Video Tutorial</h2>
-    <div id="video-grid" class="grid"><p>Memuat video...</p></div>
+    <div id="loader">Memuat data dari Google Sheets...</div>
 
-    <h2>📖 Artikel Terbaru</h2>
-    <div id="article-grid" class="grid"><p>Memuat artikel...</p></div>
+    <div id="section-video" style="display:none;">
+        <h2>📽️ Video Tutorial</h2>
+        <div id="grid-video" class="grid"></div>
+    </div>
+
+    <div id="section-artikel" style="display:none;">
+        <h2>📖 Artikel & Panduan</h2>
+        <div id="grid-artikel" class="grid"></div>
+    </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "URL_DEPLOYMENT_ANDA_DI_SINI";
+    // Tautan CSV dari Google Sheets Anda
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAd4pEtxlxD_EaVYx4L_vhhz0U3WmPYNxOXENt1NiTEGRZjpoIECzIRQSQDYhmjGQQYGN6VaMUuQ-C/pub?gid=287695265&single=true&output=csv";
 
-    async function loadData() {
+    async function fetchData() {
         try {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
+            const response = await fetch(CSV_URL);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1); // Lewati header baris pertama
             
             let vHtml = "", aHtml = "";
+            let hasVideo = false, hasArtikel = false;
 
-            data.forEach(item => {
-                if(item.tipe === 'video') {
+            rows.forEach(row => {
+                // Parsing CSV sederhana (asumsi tidak ada koma di dalam teks)
+                const cols = row.split(','); 
+                if (cols.length < 4) return;
+
+                const tipe = cols[0].trim().toLowerCase();
+                const judul = cols[1];
+                const isi = cols[2];
+                const link = cols[3];
+                const tgl = cols[4] || "";
+
+                if (tipe === 'video') {
+                    hasVideo = true;
+                    // Ubah link youtube biasa ke format embed jika perlu
+                    const embedLink = link.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                    
                     vHtml += `
-                        <div class="v-card">
-                            <div class="v-wrap"><iframe src="${item.link_media}" allowfullscreen></iframe></div>
-                            <div class="v-info">${item.judul}</div>
+                        <div class="card">
+                            <div class="video-box">
+                                <iframe src="${embedLink}" allowfullscreen></iframe>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-title">${judul}</div>
+                                <p class="card-desc">${isi.substring(0, 80)}...</p>
+                                <small class="card-meta">${tgl}</small>
+                            </div>
                         </div>`;
-                } else {
+                } else if (tipe === 'artikel') {
+                    hasArtikel = true;
                     aHtml += `
-                        <div class="a-card">
-                            <h3>${item.judul}</h3>
-                            <p>${item.isi}</p>
-                            <small style="color:#999">${item.tanggal}</small>
+                        <div class="card">
+                            <div class="card-body">
+                                <div style="color:var(--primary); font-size:10px; font-weight:bold; margin-bottom:5px;">ARTIKEL</div>
+                                <div class="card-title">${judul}</div>
+                                <p class="card-desc">${isi}</p>
+                                <small class="card-meta">${tgl}</small>
+                            </div>
                         </div>`;
                 }
             });
 
-            document.getElementById('video-grid').innerHTML = vHtml || "<p>Belum ada video.</p>";
-            document.getElementById('article-grid').innerHTML = aHtml || "<p>Belum ada artikel.</p>";
+            document.getElementById('loader').style.display = 'none';
+            
+            if(hasVideo) {
+                document.getElementById('section-video').style.display = 'block';
+                document.getElementById('grid-video').innerHTML = vHtml;
+            }
+            if(hasArtikel) {
+                document.getElementById('section-artikel').style.display = 'block';
+                document.getElementById('grid-artikel').innerHTML = aHtml;
+            }
 
         } catch (e) {
-            document.getElementById('video-grid').innerHTML = "Gagal memuat data.";
+            document.getElementById('loader').innerHTML = "Gagal memuat data. Pastikan Sheet sudah di-Publish ke Web sebagai CSV.";
+            console.error(e);
         }
     }
 
-    loadData();
+    fetchData();
 </script>
 
 </body>
