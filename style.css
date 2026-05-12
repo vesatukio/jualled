@@ -65,28 +65,59 @@ header { background: var(--primary); color: #fff; padding: 12px 15px; display: f
 #btn-install-float { position: fixed; right: 0; top: 40%; background: var(--pink); color: white; border: none; padding: 10px 5px; border-radius: 10px 0 0 10px; font-size: 11px; z-index: 8500; display: none; flex-direction: column; cursor: pointer; }
 .hide { display: none !important; }
 
-..btn-share-prod {
+./* Container kartu produk harus relatif agar tombol bisa menempel */
+.card {
+    position: relative;
+    overflow: hidden; /* Agar efek menyatu lebih rapi */
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+}
+
+/* Desain Tombol Share Profesional */
+.btn-share-prod {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    background: rgba(255,255,255,0.85); /* Putih transparan */
-    border: 1px solid #ddd;
+    top: 10px;
+    right: 10px; /* Di pojok kanan atas gambar */
+    z-index: 50;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    border: none;
+    background: rgba(255, 255, 255, 0.7); /* Transparan putih */
+    backdrop-filter: blur(4px); /* Efek kaca kekinian */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 20;
-    font-size: 18px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    color: #444;
 }
 
-.btn-share-prod:active {
-    transform: scale(1.2);
-    background: var(--primary);
+.btn-share-prod:hover {
+    background: #fff;
+    transform: scale(1.1);
+    color: var(--primary);
+}
+
+.btn-share-prod svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Tambahkan sedikit overlay bayangan halus di pojok atas agar icon lebih terlihat */
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(to bottom left, rgba(0,0,0,0.05), transparent);
+    pointer-events: none;
+    z-index: 40;
 }
 
 .status-habis { position: absolute; inset: 0; background: rgba(255,255,255,0.7); color: var(--danger); display: flex; align-items: center; justify-content: center; font-weight: 900; z-index: 10; border-radius: 10px; pointer-events: none; }
