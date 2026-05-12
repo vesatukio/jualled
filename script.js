@@ -167,11 +167,30 @@ async function actionInstall() {
 }
 
 function shareProduk(nama, harga) {
-    const text = `💡 *REKOMENDASI SPAREPART LED*\n\nProduk: ${nama}\nHarga: Rp ${harga.toLocaleString('id-ID')}\n\nSolusi hemat servis lampu sendiri. Cek stok lengkap & belanja di katalog Duta Terang LED:\nhttps://vesatukio.github.io/jualled/`;
+    const urlToko = "https://vesatukio.github.io/jualled/";
+    const hargaIDR = "Rp " + harga.toLocaleString('id-ID');
+
+    // Koleksi kalimat Soft-Selling
+    const listPesan = [
+        `Lampu mati jangan langsung dibuang! 💡 Ganti aja modulnya pakai *${nama}*. Cuma ${hargaIDR} di Duta Terang LED. Cek stoknya:`,
+        `Solusi hemat servis lampu sendiri. Ready *${nama}* kualitas mantap harga teknisi (${hargaIDR}). Intip katalognya yuk:`,
+        `Lagi cari sparepart LED atau audio? Di Duta Terang lagi ready *${nama}* nih. Harga cuma ${hargaIDR}. Cek detailnya di sini:`,
+        `Benerin lampu jadi lebih murah daripada beli baru. Pakai *${nama}* ini beres! Harga cuma ${hargaIDR}:`
+    ];
+
+    // Pilih pesan secara acak
+    const pesanRandom = listPesan[Math.floor(Math.random() * listPesan.length)];
+    const textFinal = `${pesanRandom}\n\n👉 ${urlToko}`;
+
+    // Jalankan fitur Share
     if (navigator.share) {
-        navigator.share({ title: 'Duta Terang LED', text: text, url: 'https://vesatukio.github.io/jualled/' }).catch(err => console.log('Share gagal', err));
+        navigator.share({
+            title: 'Duta Terang LED',
+            text: textFinal,
+        }).catch(err => console.log('Batal share'));
     } else {
-        const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        // Jika buka di Laptop (Fallback ke WhatsApp)
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(textFinal)}`;
         window.open(waUrl, '_blank');
     }
 }
