@@ -60,12 +60,12 @@ function render() {
         const hrgFix = p.harga - (p.harga * disc / 100);
         const isHabis = p.stok <= 0;
 
-       html += `
+        html += `
 <div class="card" data-category="${(p.kategori||'').toLowerCase()}">
     ${isHabis ? '<div class="status-habis">HABIS</div>' : ''}
     
-    <!-- Tombol Share Pojok Kanan Atas (Menyatu) -->
-    <button class="btn-share-prod" onclick="shareProduk('${p.nama}', ${hrgFix})" title="Bagikan Produk">
+    <!-- Tombol Share Pojok Kiri Atas -->
+    <button class="btn-share-prod" onclick="shareProduk('${p.nama}', ${hrgFix})" title="Bagikan Produk" style="left: 10px; right: auto;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
             <polyline points="16 6 12 2 8 6"></polyline>
@@ -73,8 +73,8 @@ function render() {
         </svg>
     </button>
 
-    <!-- Label Diskon (Pindah ke kiri jika share di kanan) -->
-    ${disc > 0 && !isHabis ? `<div style="position:absolute; top:10px; left:10px; background:var(--pink); color:white; font-size:10px; font-weight:bold; padding:3px 8px; border-radius:5px; z-index:5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2);">-${disc}%</div>` : ''}
+    <!-- Label Diskon Pojok Kanan Atas -->
+    ${disc > 0 && !isHabis ? `<div style="position:absolute; top:10px; right:10px; background:var(--pink); color:white; font-size:10px; font-weight:bold; padding:3px 8px; border-radius:5px; z-index:5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2);">-${disc}%</div>` : ''}
     
     <img src="${p.gambar || 'https://via.placeholder.com/150'}" onclick="openZoom('${p.gambar}')">
     
