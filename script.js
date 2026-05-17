@@ -15,25 +15,52 @@ window.onload = () => {
 };
 
 // Fungsi pembantu untuk mengubah text CSV dari Google Sheet menjadi Array Object / JSON
+// Fungsi pembantu baru yang lebih akurat untuk membaca CSV Google Sheet
 function parseCSV(text) {
-    const lines = text.split("\n").map(line => line.trim()).filter(line => line);
+    // Memisah baris dan membersihkan spasi/baris kosong
+    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
     if (lines.length === 0) return [];
     
-    // Mengambil nama kolom/header di baris pertama spreadsheet
+    // Ambil header di baris pertama, bersihkan tanda kutip, ubah jadi huruf kecil semua
     const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
     
     return lines.slice(1).map(line => {
-        // Regex untuk mengatasi koma di dalam tanda kutip jika ada teks deskripsi
-        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(",");
         const obj = {};
-        headers.forEach((header, index) => {
-            let val = matches[index] ? matches[index].trim().replace(/^"|"$/g, '') : "";
-            obj[header] = val;
+        let currentIdx = 0;
+        
+        // Membaca baris kolom demi kolom dengan aman meskipun ada koma di dalam teks/link
+        headers.forEach((header) => {
+            let val = "";
+            if (line.charAt(currentIdx) === '"') {
+                // Jika data diawali tanda kutip (string aman), cari penutup kutip berikutnya
+                let nextQuote = line.indexOf('"', currentIdx + 1);
+                while (nextQuote !== -1 && line.charAt(nextQuote + 1) === '"') {
+                    nextQuote = line.indexOf('"', nextQuote + 2);
+                }
+                if (nextQuote !== -1) {
+                    val = line.substring(currentIdx + 1, nextQuote).replace(/""/g, '"');
+                    currentIdx = nextQuote + 1;
+                    if (line.charAt(currentIdx) === ',') currentIdx++;
+                } else {
+                    val = line.substring(currentIdx + 1);
+                    currentIdx = line.length;
+                }
+            } else {
+                // Jika data biasa tanpa kutip (seperti link gambar atau angka)
+                let nextComma = line.indexOf(',', currentIdx);
+                if (nextComma !== -1) {
+                    val = line.substring(currentIdx, nextComma);
+                    currentIdx = nextComma + 1;
+                } else {
+                    val = line.substring(currentIdx);
+                    currentIdx = line.length;
+                }
+            }
+            obj[header] = val.trim();
         });
         return obj;
     });
 }
-
 async function load() {
     try {
         // Mengambil data dari kedua sheet secara bersamaan
